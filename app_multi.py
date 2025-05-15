@@ -1,88 +1,116 @@
 import streamlit as st
 
-# Iniciar el estado si es la primera vez
-if "step" not in st.session_state:
-    st.session_state.step = 1
+st.set_page_config(page_title="Casos interactivos antibióticos", layout="centered")
 
-st.title("🧪 Minihistoria interactiva - Caso Exblifep (flujo por decisiones)")
+# Diccionario de casos
+casos = {
+    "EXB1": "Exblifep - ITU complicada BLEE (médico colaborador)",
+    "EXB2": "Exblifep - NAC nosocomial + BLEE (PROA escéptico)",
+    "ZEV1": "Zevtera - NAC grave en urgencias (S. pneumoniae)",
+    "ZEV2": "Zevtera - Bacteriemia por SCN post-cirugía (médico dudoso)"
+}
 
-# -------- PANTALLA 1 --------
-if st.session_state.step == 1:
-    st.markdown("### 🧍‍♂️ Escenario clínico")
-    st.write("Paciente ingresado en planta con sepsis de origen urinario, colonizado por BLEE y con alergia a penicilinas. El equipo está valorando el tratamiento empírico.")
-    
-    opcion = st.radio(
-        "¿Qué propones como tratamiento empírico?",
-        ["A. Meropenem", 
-         "B. Piperacilina/tazobactam", 
-         "C. Exblifep (cefepime/enmetazobactam)"],
-        index=None
-    )
+# Estado inicial
+if "caso" not in st.session_state:
+    st.session_state.caso = None
+    st.session_state.step = 0
 
-    if opcion:
-        st.markdown("#### ✅ Feedback:")
-        if opcion.startswith("A"):
-            st.error("Meropenem es eficaz, pero su uso indiscriminado favorece la aparición de resistencias. Se busca evitar carbapenémicos cuando sea posible.")
-        elif opcion.startswith("B"):
-            st.warning("Piperacilina/tazobactam no es fiable frente a BLEE, especialmente en sepsis, y el paciente tiene alergia a penicilinas.")
-        elif opcion.startswith("C"):
-            st.success("¡Buena elección! Exblifep es activo frente a BLEE y AmpC. Buena penetración urinaria, menor impacto ecológico y alternativa a carbapenémicos.")
-        st.button("Siguiente", on_click=lambda: st.session_state.update(step=2))
+# Función para mostrar feedback con color
+def mostrar_feedback(color, texto):
+    if color == "verde":
+        st.success("🟢 " + texto)
+    elif color == "amarillo":
+        st.warning("🟡 " + texto)
+    elif color == "rojo":
+        st.error("🔴 " + texto)
 
-# -------- PANTALLA 2 --------
-elif st.session_state.step == 2:
-    st.markdown("### 📋 Evolución del caso")
-    st.write("Tras 48 h de tratamiento con Exblifep, el paciente mejora clínicamente. El urocultivo confirma E. coli BLEE, sensible a cotrimoxazol y nitrofurantoína.")
+# Menú de selección
+if st.session_state.caso is None:
+    st.title("🔍 Selecciona un caso clínico")
+    caso_seleccionado = st.selectbox("Casos disponibles:", [""] + [f"{key} - {value}" for key, value in casos.items()])
+    if caso_seleccionado and st.button("Iniciar caso"):
+        st.session_state.caso = caso_seleccionado.split(" - ")[0]
+        st.session_state.step = 0
+        st.rerun()
 
-    opcion = st.radio(
-        "¿Cambiarías el tratamiento en este momento?",
-        ["A. Mantener Exblifep", 
-         "B. Cambiar a cotrimoxazol oral", 
-         "C. Suspender antibióticos"],
-        index=None
-    )
+# Diccionario de pasos por caso
+pasos = {
+    "EXB1": [
+        ("Paciente con sepsis urinaria y colonización previa por BLEE. ¿Qué antibiótico empírico propones?",
+         ["Meropenem", "Piperacilina/tazobactam", "Exblifep"],
+         ["rojo", "amarillo", "verde"],
+         ["Uso innecesario de carbapenémico.",
+          "Puede fallar frente a BLEE.",
+          "Buena cobertura frente a BLEE."]),
 
-    if opcion:
-        st.markdown("#### ✅ Feedback:")
-        if opcion.startswith("A"):
-            st.warning("Mantener Exblifep no está justificado si hay alternativa oral, el paciente mejora y está estable.")
-        elif opcion.startswith("B"):
-            st.success("Correcto. Puede desescalarse a cotrimoxazol oral si es sensible y hay buena respuesta clínica.")
-        elif opcion.startswith("C"):
-            st.error("Suspender antibióticos tan pronto no sería prudente. Es preferible ajustar tratamiento, no suspenderlo del todo.")
-        st.button("Siguiente", on_click=lambda: st.session_state.update(step=3))
+        ("Cultivo: BLEE sensible a cotrimoxazol. El paciente mejora. ¿Qué haces?",
+         ["Mantienes Exblifep", "Cambias a cotrimoxazol oral", "Suspendes antibiótico"],
+         ["verde", "verde", "rojo"],
+         ["Puede mantenerse si no hay vía oral.",
+          "Correcto si el paciente tolera vía oral.",
+          "Suspender puede ser arriesgado."]),
 
-# -------- PANTALLA 3 --------
-elif st.session_state.step == 3:
-    st.markdown("### 🧾 Alta hospitalaria")
-    st.write("El paciente sigue estable y se plantea el alta. ¿Qué pauta antibiótica completarías en casa?")
+        ("¿Cuánto tiempo de tratamiento total propones?",
+         ["3 días", "7 días", "14 días"],
+         ["rojo", "verde", "amarillo"],
+         ["Duración insuficiente.", 
+          "Duración adecuada en ITU complicada con buena evolución.",
+          "Posiblemente excesivo."]),
 
-    opcion = st.radio(
-        "Escoge la opción más adecuada:",
-        ["A. Completar 10 días con Exblifep", 
-         "B. Finalizar tras 3 días IV por buena evolución", 
-         "C. Cambiar a cotrimoxazol oral para completar 7 días"],
-        index=None
-    )
+        ("Al alta, el médico duda si continuar algo en casa. ¿Qué propones?",
+         ["Nada", "Cotrimoxazol 3 días", "Exblifep en domicilio"],
+         ["rojo", "verde", "amarillo"],
+         ["Riesgo de recaída.",
+          "Buena opción si hay buena tolerancia oral.",
+          "IV domiciliaria es menos cómoda."])
+    ],
 
-    if opcion:
-        st.markdown("#### ✅ Feedback:")
-        if opcion.startswith("A"):
-            st.error("No tiene sentido continuar un antibiótico IV como Exblifep en casa si hay opción oral segura.")
-        elif opcion.startswith("B"):
-            st.warning("Aunque la evolución es buena, lo más habitual es completar al menos 7 días, ajustando a evolución.")
-        elif opcion.startswith("C"):
-            st.success("Opción adecuada. Cambio a oral con actividad y duración razonable ajustada a la evolución clínica.")
-        st.button("Ver resumen final", on_click=lambda: st.session_state.update(step=4))
+    "EXB2": [
+        ("Paciente con NAC nosocomial y colonización por BLEE. ¿Empírico?",
+         ["Ceftriaxona", "Meropenem", "Exblifep"],
+         ["rojo", "amarillo", "verde"],
+         ["No cubre BLEE.",
+          "Cubre pero es menos ecológico.",
+          "Buena opción frente a BLEE con menor presión."]),
 
-# -------- PANTALLA FINAL --------
-elif st.session_state.step == 4:
-    st.success("🎉 ¡Caso completado!")
-    st.markdown("### 📚 Resumen de aprendizaje:")
-    st.markdown("""
-- 💊 Exblifep es una opción empírica válida frente a BLEE con alergia a betalactámicos.
-- 🧪 La desescalada a tratamiento oral debe realizarse si hay respuesta clínica y sensibilidad.
-- 🏠 El alta con antibiótico oral activo permite completar tratamiento en casa sin riesgo innecesario.
-""")
-    if st.button("Volver a empezar"):
-        st.session_state.step = 1
+        ("El PROA plantea dudas sobre Exblifep. ¿Cómo respondes?",
+         ["Explicas respaldo y estudios", "Aceptas y cambias", "Ignoras la objeción"],
+         ["verde", "amarillo", "rojo"],
+         ["Correcto, justificas su uso.",
+          "Pierdes oportunidad formativa.",
+          "Desacredita tu posicionamiento."]),
+
+        ("Cultivo confirma BLEE. ¿Ajustas tratamiento?",
+         ["Sí, a carbapenem", "Mantengo Exblifep", "Cambio a piperacilina/tazo"],
+         ["amarillo", "verde", "rojo"],
+         ["Es aceptable, pero no aporta más.",
+          "Buena opción si hay buena evolución.",
+          "No fiable frente a BLEE."]),
+
+        ("El paciente está estable. ¿Qué duración propones?",
+         ["5 días", "7 días", "10 días"],
+         ["amarillo", "verde", "amarillo"],
+         ["Puede ser suficiente en algunos casos.",
+          "Duración adecuada para NAC grave con buena evolución.",
+          "Podría ser más de lo necesario."])
+    ]
+}
+
+# Renderizado de cada paso
+if st.session_state.caso:
+    st.title(f"🧪 Caso: {casos[st.session_state.caso]}")
+    pasos_caso = pasos[st.session_state.caso]
+
+    if st.session_state.step < len(pasos_caso):
+        pregunta, opciones, colores, feedbacks = pasos_caso[st.session_state.step]
+        opcion = st.radio(f"**{pregunta}**", opciones, index=None)
+        if opcion:
+            idx = opciones.index(opcion)
+            mostrar_feedback(colores[idx], feedbacks[idx])
+            st.button("Siguiente", on_click=lambda: st.session_state.update(step=st.session_state.step + 1))
+    else:
+        st.success("🎉 ¡Caso completado!")
+        if st.button("Volver al menú de casos"):
+            st.session_state.caso = None
+            st.session_state.step = 0
+            st.rerun()
