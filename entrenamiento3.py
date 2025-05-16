@@ -10,17 +10,17 @@ casos = {
 
 pasos = {
     "EXB1": [
-        ("🧍‍♂️ Paciente de 68 años, DM2, HTA, ingreso por fiebre, hipotensión y desorientación. Aislamiento previo de BLEE.
+        ("""🧍‍♂️ Paciente de 68 años, DM2, HTA, ingreso por fiebre, hipotensión y desorientación. Aislamiento previo de BLEE.
 
-👨‍⚕️ Médico: «Probable sepsis urinaria. Alergia leve a penicilinas. ¿Qué propones como empírico?»",
+👨‍⚕️ Médico: «Probable sepsis urinaria. Alergia leve a penicilinas. ¿Qué propones como empírico?»""",
          ["Meropenem", "Piperacilina/tazobactam", "Exblifep"],
          ["rojo", "amarillo", "verde"],
          ["Evita meropenem salvo necesidad crítica.",
           "Riesgo de ineficacia frente a BLEE.",
           "Cubres BLEE sin carbapenémicos. IPT Exblifep y estudio ALLIUM lo respaldan."]),
-        ("🧪 Cultivo confirma E. coli BLEE. Paciente mejora.
+        ("""🧪 Cultivo confirma E. coli BLEE. Paciente mejora.
 
-👨‍⚕️ Médico: «¿Cambiarías algo?»",
+👨‍⚕️ Médico: «¿Cambiarías algo?»""",
          ["Mantener Exblifep", "Cambiar a cotrimoxazol oral", "Suspender antibiótico"],
          ["amarillo", "verde", "rojo"],
          ["Podría mantenerse si no hay vía oral.",
@@ -40,17 +40,17 @@ pasos = {
           "Más incómodo, pero válido si no hay oral."])
     ],
     "ZEV1": [
-        ("🧍‍♀️ Mujer de 74 años, EPOC, NAC grave con hipotensión, satO2 <90%, sin alergias. Rx con consolidación. Previos aislamientos de S. pneumoniae resistente.
+        ("""🧍‍♀️ Mujer de 74 años, EPOC, NAC grave con hipotensión, satO2 <90%, sin alergias. Rx con consolidación. Previos aislamientos de S. pneumoniae resistente.
 
-👨‍⚕️ Urgenciólogo: «¿Qué damos empírico?»",
+👨‍⚕️ Urgenciólogo: «¿Qué damos empírico?»""",
          ["Levofloxacino", "Vancomicina", "Ceftobiprole"],
          ["rojo", "amarillo", "verde"],
          ["Fluoroquinolonas no cubren bien neumococo resistente.",
           "Solo cubre Gram+, falta betalactámico.",
           "Buena opción empírica. Cubres S. pneumoniae resistente y S. aureus. IPT Ceftobiprole."]),
-        ("🧪 Cultivo: S. pneumoniae resistente a penicilina, sensible a ceftobiprole.
+        ("""🧪 Cultivo: S. pneumoniae resistente a penicilina, sensible a ceftobiprole.
 
-👨‍⚕️ Urgenciólogo: «¿Mantenemos o cambiamos?»",
+👨‍⚕️ Urgenciólogo: «¿Mantenemos o cambiamos?»""",
          ["Mantener ceftobiprole", "Escalar a linezolid", "Suspender y dar alta"],
          ["verde", "rojo", "rojo"],
          ["Correcto. Buena evolución y sensibilidad.",
